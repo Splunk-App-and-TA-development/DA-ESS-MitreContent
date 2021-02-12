@@ -5,9 +5,8 @@
       | inputlookup mitre_all_rule_technique_lookup
 | fields rule_name
 | join rule_name
-    [ search `notable`
+    [ `mitre_rules`
     | search $urgency_field$
-    | rename search_name as rule_name
     | eval notable_src = coalesce(src,"unknown")
     | eval notable_dest = coalesce(dest,"unknown")
     | eval notable_user = coalesce(user,"unknown")
@@ -22,10 +21,7 @@
   <search id="post_process_tt_by_rule" base="basesearch_mitre_by_assets">
     <query>
 | fields tactic_name, technique_name, rule_name
-| makemv tokenizer="([^\n\s]+)" tactic_name
-| mvexpand tactic_name
-| makemv tokenizer="([^\n\s]+)" technique_name
-| mvexpand technique_name</query>
+</query>
   </search>
   <fieldset autoRun="true" submitButton="true">
     <input type="time" searchWhenChanged="false" token="attack_time_field">
@@ -133,6 +129,46 @@
         <drilldown>
           <link target="_blank">/app/SplunkEnterpriseSecuritySuite/incident_review?earliest=$attack_time_field.earliest$&amp;amp;latest=$attack_time_field.latest$&amp;amp;urgency=critical&amp;amp;urgency=high&amp;amp;urgency=medium&amp;amp;urgency=low&amp;amp;urgency=informational&amp;search=$click.value$</link>
         </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Reconnaissance</title>
+      <table>
+        <search base="post_process_tt_by_rule">
+          <query>| search tactic_name="Reconnaissance"
+| stats count by technique_name rule_name
+| sort -count
+| rename count as "Triggered Rule Count", technique_name as "Technique", rule_name as "Rule"</query>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Resource Development</title>
+      <table>
+        <search base="post_process_tt_by_rule">
+          <query>| search tactic_name="Resource Development"
+| stats count by technique_name rule_name
+| sort -count
+| rename count as "Triggered Rule Count", technique_name as "Technique", rule_name as "Rule"</query>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
       </table>
     </panel>
   </row>
